@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
+  <meta http-equiv="Pragma" content="no-cache" />
+  <meta http-equiv="Expires" content="0" />
+  <title>what does it mean to know something</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link
+    href="https://fonts.googleapis.com/css2?family=Literata:opsz,wght@7..72,300;7..72,400;7..72,500;7..72,600&display=swap"
+    rel="stylesheet"
+  />
+
+  <style>
+    *, *::before, *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    html, body {
+      height: 100%;
+    }
+
+    body {
+      background: #d4d4d4;
+      font-family: 'Literata', Georgia, serif;
+      text-transform: lowercase;
+      overflow: hidden;
+    }
+
+    .question {
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      z-index: 10;
+      color: #420d0d;
+      font-weight: 550;
+      font-size: 1.75rem;
+      line-height: 1.45;
+      max-width: 32rem;
+      width: 90%;
+      text-align: center;
+    }
+
+    .answers {
+      position: fixed;
+      inset: 0;
+      z-index: 1;
+      pointer-events: none;
+    }
+
+    .answer {
+      position: absolute;
+      left: 0;
+      top: 0;
+      pointer-events: auto;
+      cursor: default;
+    }
+
+    .answer-inner {
+      display: inline-block;
+      color: #111;
+      opacity: 0.33;
+      font-weight: 350;
+      font-size: 1.35rem;
+      max-width: 32ch;
+      white-space: normal;
+      line-height: 1.55;
+      transition:
+        opacity 180ms ease-out,
+        font-weight 180ms ease-out,
+        transform 180ms ease-out;
+    }
+
+    .answer:hover .answer-inner {
+      opacity: 0.6;
+      font-weight: 500;
+      transform: scale(1.06);
+    }
+
+    @media (max-width: 600px) {
+      .question {
+        font-size: 1.4rem;
+      }
+
+      .answer-inner {
+        font-size: 1.1rem;
+        max-width: 70vw;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <main>
+    <h1 class="question">what does it mean to know something</h1>
+
+    <section class="answers">
+      <span class="answer"><span class="answer-inner">to be able to explain it</span></span>
+      <span class="answer"><span class="answer-inner">to predict its behavior</span></span>
+      <span class="answer"><span class="answer-inner">to recognize its limits</span></span>
+      <span class="answer"><span class="answer-inner">to have used it before</span></span>
+      <span class="answer"><span class="answer-inner">to feel certain about it</span></span>
+      <span class="answer"><span class="answer-inner">to remember where you learned it</span></span>
+      <span class="answer"><span class="answer-inner">to doubt it properly</span></span>
+      <span class="answer"><span class="answer-inner">to teach it to someone else</span></span>
+      <span class="answer"><span class="answer-inner">to act on it without hesitation</span></span>
+      <span class="answer"><span class="answer-inner">to see what it connects to</span></span>
+      <span class="answer"><span class="answer-inner">to know when it fails</span></span>
+      <span class="answer"><span class="answer-inner">to have forgotten how you learned it</span></span>
+      <span class="answer"><span class="answer-inner">to let it change you</span></span>
+      <span class="answer"><span class="answer-inner">to hold it loosely</span></span>
+      <span class="answer"><span class="answer-inner">short</span></span>
+      <span class="answer"><span class="answer-inner">a very long answer that tests the maximum width constraint and wrapping behavior</span></span>
+      <span class="answer"><span class="answer-inner">medium length text here</span></span>
+      <span class="answer"><span class="answer-inner">to understand the boundaries of what can be known and what remains forever uncertain</span></span>
+    </section>
+  </main>
+
+  <script>
+    (() => {
+      const config = {
+        lerp: 0.08,
+        horizontalMargin: 0.04,
+        horizontalJitter: 0.6,
+        verticalSpacing: 140,
+        verticalJitter: 40
+      };
+
+      let targetY = 0;
+      let currentY = 0;
+      let loopHeight = 0;
+      let viewportWidth = 0;
+      let viewportHeight = 0;
+
+      const answerData = [];
+
+      const mod = (n, m) => ((n % m) + m) % m;
+      const lerp = (a, b, t) => a + (b - a) * t;
+
+      function updatePositions() {
+        const center = viewportWidth / 2;
+        answerData.forEach(d => {
+          let y = d.baseY - currentY * d.depth;
+          y = mod(y + loopHeight / 2, loopHeight) - loopHeight / 2 + viewportHeight / 2;
+          
+          const isRight = d.fixedX >= center;
+          const x = isRight ? d.rightEdgeX - d.inner.offsetWidth : d.fixedX;
+          
+          d.element.style.transform = `translate3d(${x.toFixed(1)}px, ${y.toFixed(1)}px, 0)`;
+          d.inner.style.transformOrigin = isRight ? 'right center' : 'left center';
+        });
+      }
+
+      function animate() {
+        currentY = lerp(currentY, targetY, config.lerp);
+        updatePositions();
+        requestAnimationFrame(animate);
+      }
+
+      function init() {
+        const answers = document.querySelectorAll('.answer');
+        const count = answers.length;
+
+        viewportWidth = window.innerWidth;
+        viewportHeight = window.innerHeight;
+        loopHeight = count * config.verticalSpacing;
+
+        const marginX = viewportWidth * config.horizontalMargin;
+        const usableWidth = viewportWidth - marginX * 2;
+        const bandWidth = usableWidth / count;
+
+        const bands = [...Array(count).keys()].sort(() => Math.random() - 0.5);
+
+        answers.forEach((el, i) => {
+          const band = bands[i];
+          const centerX = marginX + (band + 0.5) * bandWidth;
+          const jitter = (Math.random() - 0.5) * bandWidth * config.horizontalJitter;
+
+          const baseY =
+            i * (loopHeight / count) +
+            (Math.random() - 0.5) * 2 * config.verticalJitter;
+
+          const inner = el.querySelector('.answer-inner');
+          const initialWidth = inner.offsetWidth;
+          const center = viewportWidth / 2;
+          let x = centerX + jitter;
+          
+          // Clamp positions to stay within margins
+          const isRight = x >= center;
+          if (isRight) {
+            x = Math.min(x, viewportWidth - marginX - initialWidth);
+          } else {
+            x = Math.max(x, marginX);
+          }
+
+          answerData.push({
+            element: el,
+            inner,
+            fixedX: x,
+            rightEdgeX: x + initialWidth,
+            baseY,
+            depth: 0.5 + Math.random() * 0.5
+          });
+        });
+
+        updatePositions();
+      }
+
+      window.addEventListener('wheel', e => {
+        e.preventDefault();
+        targetY += e.deltaY;
+      }, { passive: false });
+
+      window.addEventListener('resize', () => {
+        viewportWidth = window.innerWidth;
+        viewportHeight = window.innerHeight;
+      });
+
+      document.addEventListener('DOMContentLoaded', () => {
+        init();
+        requestAnimationFrame(animate);
+      });
+    })();
+  </script>
+</body>
+</html>
