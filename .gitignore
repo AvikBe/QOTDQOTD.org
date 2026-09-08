@@ -5,3 +5,4 @@ admin_password.txt
 node_modules/
 .wrangler/
 migration.sql
+backup-*.json
