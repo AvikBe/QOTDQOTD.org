@@ -253,9 +253,67 @@
       padding: 1rem 0;
     }
 
+    /* === Suggestions === */
+    .sugg-row {
+      display: flex;
+      align-items: baseline;
+      gap: 0.65rem;
+      border-bottom: 1px solid rgba(91, 26, 20, 0.08);
+      padding: 0.7rem 0.25rem;
+    }
+
+    .sugg-row.is-used { opacity: 0.45; }
+
+    .sugg-text {
+      flex: 1;
+      font-size: 0.95rem;
+      font-weight: 350;
+      color: #5b1a14;
+      opacity: 0.85;
+      line-height: 1.35;
+      text-align: left;
+    }
+
+    .sugg-row.is-used .sugg-text { text-decoration: line-through; }
+
+    .sugg-who {
+      font-size: 0.75rem;
+      opacity: 0.6;
+    }
+
+    .sugg-actions {
+      flex: none;
+      display: flex;
+      gap: 0.3rem;
+    }
+
+    .sugg-actions button {
+      background: none;
+      border: none;
+      border-radius: 0;
+      padding: 0.15rem 0.35rem;
+
+      font-family: inherit;
+      font-size: 0.75rem;
+      color: #5b1a14;
+      text-transform: lowercase;
+
+      opacity: 0.5;
+      cursor: pointer;
+      transition: opacity 150ms ease-out;
+    }
+
+    .sugg-actions button:hover {
+      background: none;
+      color: #48120c;
+      opacity: 1;
+      text-decoration: underline;
+    }
+
     @media (max-width: 600px) {
       .q { font-size: 1.25rem; }
       .row { flex-direction: column; }
+      .sugg-row { flex-direction: column; gap: 0.35rem; }
     }
   </style>
 </head>
@@ -274,6 +332,15 @@
       </div>
     </form>
     <p class="status" id="status"></p>
+
+    <section class="favorites">
+      <h2>suggestions</h2>
+      <p class="fav-hint">sent in by visitors — “use it” drops one into the box above</p>
+
+      <div class="fav-list" id="sugg-list">
+        <p class="fav-muted">enter your password to load suggestions</p>
+      </div>
+    </section>
 
     <section class="favorites">
       <h2>past questions</h2>
@@ -413,6 +480,118 @@
     }
 
     loadArchive();
+
+    /* === Suggestions === */
+    const suggListEl = $('sugg-list');
+
+    function suggMuted(msg) {
+      suggListEl.textContent = '';
+      const p = document.createElement('p');
+      p.className = 'fav-muted';
+      p.textContent = msg;
+      suggListEl.append(p);
+    }
+
+    async function suggestionAction(id, payload, okMsg) {
+      const password = $('password').value;
+      if (!password) return note('enter your admin password first');
+      try {
+        const r = await fetch('/api/suggestion', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ password, id, ...payload }),
+        });
+        const out = await r.json();
+        if (!r.ok) throw new Error(out.error || 'could not save');
+        note(okMsg);
+        loadSuggestions();
+      } catch (err) {
+        note(err.message);
+      }
+    }
+
+    function renderSuggestions(items) {
+      suggListEl.textContent = '';
+      if (!items.length) {
+        suggMuted('no suggestions yet');
+        return;
+      }
+
+      items.forEach(s => {
+        const row = document.createElement('div');
+        row.className = 'sugg-row' + (s.used ? ' is-used' : '');
+
+        const text = document.createElement('span');
+        text.className = 'sugg-text';
+        text.textContent = s.question;
+        if (s.name) {
+          const who = document.createElement('span');
+          who.className = 'sugg-who';
+          who.textContent = ` — ${s.name}`;
+          text.append(who);
+        }
+
+        const actions = document.createElement('span');
+        actions.className = 'sugg-actions';
+
+        if (!s.used) {
+          const use = document.createElement('button');
+          use.type = 'button';
+          use.textContent = 'use it';
+          use.addEventListener('click', () => {
+            // drop it into the question box, ready to post
+            $('question').value = s.question;
+            $('question').focus();
+            suggestionAction(s.id, { used: true }, 'loaded above — press post it to publish');
+          });
+          actions.append(use);
+        } else {
+          const undo = document.createElement('button');
+          undo.type = 'button';
+          undo.textContent = 'unmark';
+          undo.addEventListener('click', () =>
+            suggestionAction(s.id, { used: false }, 'marked unused'));
+          actions.append(undo);
+        }
+
+        const del = document.createElement('button');
+        del.type = 'button';
+        del.textContent = 'delete';
+        del.addEventListener('click', () =>
+          suggestionAction(s.id, { remove: true }, 'suggestion deleted'));
+        actions.append(del);
+
+        row.append(text, actions);
+        suggListEl.append(row);
+      });
+    }
+
+    async function loadSuggestions() {
+      const password = $('password').value;
+      if (!password) {
+        suggMuted('enter your admin password to load suggestions');
+        return;
+      }
+      try {
+        const r = await fetch('/api/suggestions', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ password }),
+        });
+        const out = await r.json();
+        if (!r.ok) throw new Error(out.error || 'could not load suggestions');
+        renderSuggestions(out.suggestions);
+      } catch (err) {
+        suggMuted(err.message);
+      }
+    }
+
+    // the list is password-gated, so load it once one has been typed
+    let suggTimer = null;
+    $('password').addEventListener('input', () => {
+      clearTimeout(suggTimer);
+      suggTimer = setTimeout(loadSuggestions, 600);
+    });
 
     $('form').addEventListener('submit', async e => {
       e.preventDefault();

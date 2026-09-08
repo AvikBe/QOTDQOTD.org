@@ -219,32 +219,150 @@
       opacity: 0.45;
     }
 
-    /* === Archive link === */
-    .archive-link {
+    /* === Top bar === */
+    .topbar {
       position: fixed;
       top: 1.5rem;
       left: 1.75rem;
+      right: 1.75rem;
       z-index: 30;
 
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 1rem;
+    }
+
+    .topbar-items {
+      display: contents;
+    }
+
+    .topbar-links {
+      display: flex;
+      align-items: baseline;
+      gap: 1.25rem;
+    }
+
+    /* shared look for the plain text controls up top */
+    .archive-link,
+    .suggest-toggle {
+      background: none;
+      border: none;
+      padding: 0;
+
+      font-family: inherit;
       font-size: 0.95rem;
       font-weight: 350;
       color: #5b1a14;
+      text-transform: lowercase;
       text-decoration: none;
+      white-space: nowrap;
+
       opacity: 0.45;
+      cursor: pointer;
       transition: opacity 180ms ease-out, color 180ms ease-out;
     }
 
-    .archive-link:hover {
+    .archive-link:hover,
+    .suggest-toggle:hover,
+    .suggest-toggle[aria-expanded="true"] {
       opacity: 0.9;
       color: #48120c;
     }
 
+    /* === Hamburger (mobile only) === */
+    .menu-toggle {
+      display: none;
+      background: none;
+      border: none;
+      padding: 0.15rem 0.3rem;
+
+      font-family: inherit;
+      font-size: 1.15rem;
+      line-height: 1;
+      color: #5b1a14;
+
+      opacity: 0.5;
+      cursor: pointer;
+      transition: opacity 180ms ease-out, color 180ms ease-out;
+    }
+
+    .menu-toggle:hover,
+    .menu-toggle[aria-expanded="true"] {
+      opacity: 0.95;
+      color: #48120c;
+    }
+
+    /* === Suggestions === */
+    .suggest {
+      position: relative;
+    }
+
+    .suggest-panel {
+      position: absolute;
+      left: 0;
+      top: 100%;
+      width: min(20rem, 80vw);
+      margin-top: 0.75rem;
+      padding: 0.9rem 1rem 1rem;
+      background: rgba(241, 233, 218, 0.96);
+      text-align: left;
+    }
+
+    .suggest-panel input {
+      display: block;
+      width: 100%;
+      background: transparent;
+      border: none;
+      border-bottom: 1px solid rgba(91, 26, 20, 0.25);
+      padding: 0.35rem 0.25rem;
+
+      font-family: inherit;
+      font-size: 0.95rem;
+      font-weight: 350;
+      color: #5b1a14;
+      text-transform: lowercase;
+      outline: none;
+    }
+
+    .suggest-panel input::placeholder { color: #5b1a14; opacity: 0.45; }
+    .suggest-panel input:focus { border-bottom-color: rgba(72, 18, 12, 0.6); }
+
+    .suggest-panel .suggest-name {
+      margin-top: 0.6rem;
+      font-size: 0.85rem;
+      opacity: 0.75;
+    }
+
+    .suggest-send {
+      margin-top: 0.9rem;
+      background: transparent;
+      border: 1px solid rgba(91, 26, 20, 0.45);
+      border-radius: 999px;
+      color: #5b1a14;
+      font-family: inherit;
+      font-size: 0.85rem;
+      text-transform: lowercase;
+      padding: 0.3rem 0.9rem;
+      cursor: pointer;
+      transition: background 150ms ease-out, color 150ms ease-out;
+    }
+
+    .suggest-send:hover { background: #48120c; color: #f1e9da; }
+
+    .suggest-note {
+      margin-top: 0.7rem;
+      font-size: 0.78rem;
+      font-weight: 350;
+      color: #5b1a14;
+      opacity: 0.6;
+      min-height: 1.1em;
+      line-height: 1.35;
+    }
+
     /* === Search === */
     .search {
-      position: fixed;
-      top: 1.5rem;
-      right: 1.75rem;
-      z-index: 30;
+      position: relative;
       width: min(12rem, 60vw);
       text-align: right;
     }
@@ -378,20 +496,101 @@
         font-size: 1.1rem;
         max-width: 70vw;
       }
+
+      /* everything up top collapses behind the hamburger */
+      .topbar {
+        justify-content: flex-end;
+      }
+
+      .menu-toggle { display: block; }
+
+      .topbar-items {
+        display: none;
+        position: absolute;
+        right: 0;
+        top: 100%;
+        margin-top: 0.75rem;
+        width: min(17rem, 78vw);
+        padding: 1rem;
+        /* opaque: the question sits directly behind this panel */
+        background: #f1e9da;
+        box-shadow: 0 1px 12px rgba(91, 26, 20, 0.1);
+        text-align: left;
+      }
+
+      .topbar.open .topbar-items { display: block; }
+
+      .topbar-links {
+        display: block;
+      }
+
+      .topbar-links > * {
+        display: block;
+        margin-bottom: 0.9rem;
+      }
+
+      .search {
+        width: 100%;
+        text-align: left;
+      }
+
+      .search input {
+        text-align: left;
+        padding-left: 0.25rem;
+        padding-right: 1.5rem;
+        opacity: 0.85;
+      }
+
+      /* the clear button lives on the right once the text is left-aligned */
+      .search .clear {
+        left: auto;
+        right: 0;
+      }
+
+      .search-results,
+      .suggest-panel {
+        position: static;
+        width: 100%;
+        margin-top: 0.75rem;
+        padding: 0.5rem 0;
+        background: none;
+      }
     }
   </style>
 </head>
 
 <body>
   <main>
-    <a class="archive-link" href="/archive">past questions</a>
+    <nav class="topbar">
+      <button type="button" class="menu-toggle" aria-label="menu" aria-expanded="false">☰</button>
 
-    <div class="search">
-      <button type="button" class="clear" aria-label="clear search" hidden>&times;</button>
-      <input type="search" placeholder="look someone up…"
-             autocomplete="off" aria-label="search answers by name" />
-      <div class="search-results" hidden></div>
-    </div>
+      <div class="topbar-items">
+        <div class="topbar-links">
+          <a class="archive-link" href="/archive">past questions</a>
+
+          <div class="suggest">
+            <button type="button" class="suggest-toggle" aria-expanded="false">suggest a question</button>
+            <form class="suggest-panel" hidden>
+              <input class="suggest-q" type="text" maxlength="200"
+                     placeholder="a question worth asking…" autocomplete="off"
+                     aria-label="your suggested question" />
+              <input class="suggest-name" type="text" maxlength="60"
+                     placeholder="your name (optional)" autocomplete="name"
+                     aria-label="your name (optional)" />
+              <button class="suggest-send" type="submit">send it</button>
+              <p class="suggest-note"></p>
+            </form>
+          </div>
+        </div>
+
+        <div class="search">
+          <button type="button" class="clear" aria-label="clear search" hidden>&times;</button>
+          <input type="search" placeholder="look someone up…"
+                 autocomplete="off" aria-label="search answers by name" />
+          <div class="search-results" hidden></div>
+        </div>
+      </div>
+    </nav>
 
     <h1 class="question">
       <span class="question-text"></span>
@@ -512,7 +711,7 @@
         avoidRects = [
           questionEl.getBoundingClientRect(),
           searchInput.getBoundingClientRect(),
-          document.querySelector('.archive-link').getBoundingClientRect(),
+          document.querySelector('.topbar-links').getBoundingClientRect(),
         ];
         if (!composer.hidden) avoidRects.push(composer.getBoundingClientRect());
 
@@ -710,6 +909,78 @@
         }
       });
 
+      /* === Top bar === */
+
+      const topbar = document.querySelector('.topbar');
+      const menuToggle = topbar.querySelector('.menu-toggle');
+      const suggestBox = topbar.querySelector('.suggest');
+      const suggestToggle = topbar.querySelector('.suggest-toggle');
+      const suggestPanel = topbar.querySelector('.suggest-panel');
+      const suggestQ = suggestPanel.querySelector('.suggest-q');
+      const suggestName = suggestPanel.querySelector('.suggest-name');
+      const suggestNote = suggestPanel.querySelector('.suggest-note');
+
+      function openSuggest(open) {
+        suggestPanel.hidden = !open;
+        suggestToggle.setAttribute('aria-expanded', String(open));
+        if (open) {
+          searchResults.hidden = true;
+          suggestQ.focus();
+        }
+        layout();
+      }
+
+      function openMenu(open) {
+        topbar.classList.toggle('open', open);
+        menuToggle.setAttribute('aria-expanded', String(open));
+        if (!open) openSuggest(false);
+        layout();
+      }
+
+      menuToggle.addEventListener('click', () =>
+        openMenu(!topbar.classList.contains('open')));
+
+      suggestToggle.addEventListener('click', () => openSuggest(suggestPanel.hidden));
+
+      suggestPanel.addEventListener('submit', async e => {
+        e.preventDefault();
+        const question = suggestQ.value.trim();
+        if (!question) {
+          suggestNote.textContent = 'type a question first';
+          return;
+        }
+        suggestNote.textContent = 'sending…';
+        try {
+          const r = await fetch('/api/suggest', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ question, name: suggestName.value.trim() }),
+          });
+          const out = await r.json();
+          if (!r.ok) throw new Error(out.error || 'could not send it');
+          suggestQ.value = '';
+          suggestNote.textContent = 'thanks — it’s in the pile';
+        } catch (err) {
+          suggestNote.textContent = err.message;
+        }
+      });
+
+      // clicking away closes whatever is open up there
+      document.addEventListener('click', e => {
+        if (!e.target.closest('.suggest')) {
+          if (!suggestPanel.hidden) openSuggest(false);
+        }
+        if (!e.target.closest('.topbar') && topbar.classList.contains('open')) {
+          openMenu(false);
+        }
+      });
+
+      document.addEventListener('keydown', e => {
+        if (e.key !== 'Escape') return;
+        if (!suggestPanel.hidden) openSuggest(false);
+        else if (topbar.classList.contains('open')) openMenu(false);
+      });
+
       /* === Search === */
 
       const formatDate = iso =>
@@ -792,7 +1063,7 @@
       /* === Input === */
 
       window.addEventListener('wheel', e => {
-        if (e.target.closest('.search')) return;
+        if (e.target.closest('.topbar')) return;
         e.preventDefault();
         targetY += e.deltaY;
       }, { passive: false });
@@ -804,7 +1075,7 @@
       }, { passive: true });
 
       window.addEventListener('touchmove', e => {
-        if (e.target.closest('.composer, .search')) return;
+        if (e.target.closest('.composer, .topbar')) return;
         e.preventDefault();
         if (lastTouchY === null) {
           lastTouchY = e.touches[0].clientY;

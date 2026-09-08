@@ -153,6 +153,76 @@ async function apiArchive(env, voter) {
   };
 }
 
+const MAX_SUGGESTIONS_PENDING = 300;
+
+async function addSuggestion(env, body) {
+  const question = clean(body.question, MAX_QUESTION_LEN);
+  const name = clean(body.name, MAX_NAME_LEN) || null;
+  if (!question) {
+    return [400, { error: 'the suggestion is empty' }];
+  }
+
+  const { c } = await env.DB.prepare(
+    'SELECT COUNT(*) AS c FROM suggestions WHERE used = 0'
+  ).first();
+  if (c >= MAX_SUGGESTIONS_PENDING) {
+    return [429, { error: 'there are plenty of suggestions waiting — try again later' }];
+  }
+
+  await env.DB.prepare(
+    'INSERT INTO suggestions (question, name) VALUES (?1, ?2)'
+  ).bind(question, name).run();
+
+  return [200, { ok: true }];
+}
+
+// admin-only: reading the suggestion pile
+async function listSuggestions(env, body) {
+  const expected = env.ADMIN_PASSWORD;
+  if (!expected) {
+    return [500, { error: 'no admin password configured on the server' }];
+  }
+  if (!(await passwordMatches(String(body.password ?? ''), expected))) {
+    return [403, { error: 'wrong password' }];
+  }
+
+  const { results } = await env.DB.prepare(
+    `SELECT id, question, name, used, created_at
+     FROM suggestions ORDER BY used, id DESC LIMIT 200`
+  ).all();
+
+  return [200, {
+    ok: true,
+    suggestions: results.map(s => ({ ...s, used: !!s.used })),
+  }];
+}
+
+async function updateSuggestion(env, body) {
+  const expected = env.ADMIN_PASSWORD;
+  if (!expected) {
+    return [500, { error: 'no admin password configured on the server' }];
+  }
+  if (!(await passwordMatches(String(body.password ?? ''), expected))) {
+    return [403, { error: 'wrong password' }];
+  }
+
+  const id = Number(body.id);
+  if (!Number.isInteger(id) || id <= 0) {
+    return [400, { error: 'invalid suggestion' }];
+  }
+
+  const stmt = body.remove
+    ? env.DB.prepare('DELETE FROM suggestions WHERE id = ?1').bind(id)
+    : env.DB.prepare('UPDATE suggestions SET used = ?1 WHERE id = ?2')
+        .bind(body.used ? 1 : 0, id);
+
+  const { meta } = await stmt.run();
+  if (!meta.changes) {
+    return [404, { error: 'no such suggestion' }];
+  }
+  return [200, { ok: true, id }];
+}
+
 async function setFavorite(env, body) {
   const expected = env.ADMIN_PASSWORD;
   if (!expected) {
@@ -289,7 +359,8 @@ export default {
           ? json(200, day)
           : json(404, { error: 'no question for that date' });
       }
-      if (['/api/question', '/api/respond', '/api/favorite', '/api/star'].includes(path)
+      if (['/api/question', '/api/respond', '/api/favorite', '/api/star',
+           '/api/suggest', '/api/suggestions', '/api/suggestion'].includes(path)
           && request.method === 'POST') {
         let body;
         try {
@@ -303,6 +374,9 @@ export default {
           '/api/respond': addResponse,
           '/api/favorite': setFavorite,
           '/api/star': toggleStar,
+          '/api/suggest': addSuggestion,
+          '/api/suggestions': listSuggestions,
+          '/api/suggestion': updateSuggestion,
         }[path];
         const [status, payload] = await handler(env, body);
         return json(status, payload);
