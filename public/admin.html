@@ -25,7 +25,7 @@
     }
 
     body {
-      background: #f4efe6;
+      background: #f1e9da;
       font-family: 'Literata', Georgia, serif;
       text-transform: lowercase;
       display: flex;
@@ -41,7 +41,7 @@
     .date {
       font-size: 0.95rem;
       font-weight: 350;
-      color: #1f1212;
+      color: #5b1a14;
       opacity: 0.5;
       margin-bottom: 2.5rem;
     }
@@ -50,8 +50,8 @@
       width: 100%;
       background: transparent;
       border: none;
-      border-bottom: 1px solid rgba(66, 13, 13, 0.35);
-      color: #420d0d;
+      border-bottom: 1px solid rgba(72, 18, 12, 0.35);
+      color: #48120c;
       font-family: inherit;
       font-size: 1.6rem;
       font-weight: 550;
@@ -63,11 +63,11 @@
     }
 
     .q:focus {
-      border-bottom-color: rgba(66, 13, 13, 0.7);
+      border-bottom-color: rgba(72, 18, 12, 0.7);
     }
 
     .q::placeholder {
-      color: #420d0d;
+      color: #48120c;
       opacity: 0.35;
       font-weight: 400;
     }
@@ -83,8 +83,8 @@
     .pw {
       background: transparent;
       border: none;
-      border-bottom: 1px solid rgba(31, 18, 18, 0.3);
-      color: #1f1212;
+      border-bottom: 1px solid rgba(91, 26, 20, 0.3);
+      color: #5b1a14;
       font-family: inherit;
       font-size: 0.95rem;
       text-align: center;
@@ -95,9 +95,9 @@
 
     button {
       background: transparent;
-      border: 1px solid rgba(66, 13, 13, 0.5);
+      border: 1px solid rgba(72, 18, 12, 0.5);
       border-radius: 999px;
-      color: #420d0d;
+      color: #48120c;
       font-family: inherit;
       font-size: 0.95rem;
       text-transform: lowercase;
@@ -107,35 +107,35 @@
     }
 
     button:hover {
-      background: #420d0d;
-      color: #f4efe6;
+      background: #48120c;
+      color: #f1e9da;
     }
 
     .status {
       margin-top: 2rem;
       font-size: 0.9rem;
       font-weight: 350;
-      color: #1f1212;
+      color: #5b1a14;
       opacity: 0.6;
       min-height: 1.3em;
     }
 
     .status a {
-      color: #420d0d;
+      color: #48120c;
     }
 
     /* === Favorites === */
     .favorites {
       margin-top: 4.5rem;
       text-align: left;
-      border-top: 1px solid rgba(31, 18, 18, 0.15);
+      border-top: 1px solid rgba(91, 26, 20, 0.15);
       padding-top: 1.75rem;
     }
 
     .favorites h2 {
       font-size: 0.9rem;
       font-weight: 400;
-      color: #1f1212;
+      color: #5b1a14;
       opacity: 0.5;
       text-align: center;
       margin-bottom: 0.4rem;
@@ -144,7 +144,7 @@
     .fav-hint {
       font-size: 0.78rem;
       font-weight: 350;
-      color: #1f1212;
+      color: #5b1a14;
       opacity: 0.4;
       text-align: center;
       margin-bottom: 1.5rem;
@@ -155,14 +155,14 @@
       width: 100%;
       background: transparent;
       border: none;
-      border-bottom: 1px solid rgba(31, 18, 18, 0.15);
+      border-bottom: 1px solid rgba(91, 26, 20, 0.15);
       padding: 0.35rem 0.5rem;
       margin-bottom: 0.5rem;
 
       font-family: inherit;
       font-size: 0.9rem;
       font-weight: 350;
-      color: #1f1212;
+      color: #5b1a14;
       text-align: center;
       text-transform: lowercase;
 
@@ -171,7 +171,7 @@
       transition: opacity 180ms ease-out;
     }
 
-    .fav-filter::placeholder { color: #1f1212; }
+    .fav-filter::placeholder { color: #5b1a14; }
     .fav-filter:hover, .fav-filter:focus { opacity: 1; }
 
     .fav-list {
@@ -179,12 +179,12 @@
       overflow-y: auto;
       overscroll-behavior: contain;
       scrollbar-width: thin;
-      scrollbar-color: rgba(66, 13, 13, 0.3) transparent;
+      scrollbar-color: rgba(72, 18, 12, 0.3) transparent;
     }
 
     .fav-list::-webkit-scrollbar { width: 4px; }
     .fav-list::-webkit-scrollbar-thumb {
-      background: rgba(66, 13, 13, 0.3);
+      background: rgba(72, 18, 12, 0.3);
       border-radius: 2px;
     }
 
@@ -196,7 +196,7 @@
 
       background: none;
       border: none;
-      border-bottom: 1px solid rgba(31, 18, 18, 0.08);
+      border-bottom: 1px solid rgba(91, 26, 20, 0.08);
       padding: 0.7rem 0.25rem;
 
       font-family: inherit;
@@ -205,13 +205,13 @@
       cursor: pointer;
     }
 
-    .fav-row:hover { background: rgba(66, 13, 13, 0.04); }
+    .fav-row:hover { background: rgba(72, 18, 12, 0.04); }
 
     .fav-star {
       flex: none;
       font-size: 1rem;
       line-height: 1;
-      color: #420d0d;
+      color: #48120c;
       opacity: 0.25;
       transition: opacity 150ms ease-out;
     }
@@ -224,13 +224,13 @@
       flex: 1;
       font-size: 0.95rem;
       font-weight: 350;
-      color: #1f1212;
+      color: #5b1a14;
       opacity: 0.75;
       line-height: 1.35;
     }
 
     .fav-row.is-fav .fav-q {
-      color: #420d0d;
+      color: #48120c;
       opacity: 0.9;
       font-weight: 400;
     }
@@ -239,7 +239,7 @@
       flex: none;
       font-size: 0.72rem;
       font-weight: 350;
-      color: #1f1212;
+      color: #5b1a14;
       opacity: 0.4;
       white-space: nowrap;
     }
@@ -247,7 +247,7 @@
     .fav-muted {
       font-size: 0.85rem;
       font-weight: 350;
-      color: #1f1212;
+      color: #5b1a14;
       opacity: 0.45;
       text-align: center;
       padding: 1rem 0;
