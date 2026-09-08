@@ -1,0 +1,519 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>past questions</title>
+
+  <!-- Literata -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link
+    href="https://fonts.googleapis.com/css2?family=Literata:opsz,wght@7..72,300..600&display=swap"
+    rel="stylesheet"
+  />
+
+  <style>
+    *, *::before, *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      background: #f4efe6;
+      font-family: 'Literata', Georgia, serif;
+      text-transform: lowercase;
+      min-height: 100vh;
+      padding: 4.5rem 1.5rem 6rem;
+    }
+
+    .wrap {
+      max-width: 36rem;
+      margin: 0 auto;
+    }
+
+    /* === Header === */
+    .back {
+      position: fixed;
+      top: 1.5rem;
+      left: 1.75rem;
+      z-index: 30;
+
+      font-size: 0.95rem;
+      font-weight: 350;
+      color: #1f1212;
+      text-decoration: none;
+      opacity: 0.45;
+      transition: opacity 180ms ease-out, color 180ms ease-out;
+    }
+
+    .back:hover {
+      opacity: 0.9;
+      color: #420d0d;
+    }
+
+    h1 {
+      font-size: 1.4rem;
+      font-weight: 550;
+      color: #420d0d;
+      text-align: center;
+      line-height: 1.4;
+    }
+
+    .count {
+      margin-top: 0.6rem;
+      font-size: 0.85rem;
+      font-weight: 350;
+      color: #1f1212;
+      opacity: 0.45;
+      text-align: center;
+    }
+
+    /* === Mode toggle === */
+    .modes {
+      margin-top: 1.6rem;
+      text-align: center;
+    }
+
+    .mode {
+      background: none;
+      border: none;
+      padding: 0.2rem 0.35rem;
+
+      font-family: inherit;
+      font-size: 0.9rem;
+      font-weight: 350;
+      color: #1f1212;
+      text-transform: lowercase;
+
+      opacity: 0.4;
+      cursor: pointer;
+      transition: opacity 180ms ease-out, color 180ms ease-out;
+    }
+
+    .mode:hover { opacity: 0.75; }
+
+    .mode.is-on {
+      opacity: 0.9;
+      color: #420d0d;
+      font-weight: 500;
+    }
+
+    .mode-sep {
+      font-size: 0.9rem;
+      color: #1f1212;
+      opacity: 0.3;
+    }
+
+    /* === Filter === */
+    .filter {
+      display: block;
+      width: 100%;
+      margin: 1.4rem 0 0.5rem;
+      background: transparent;
+      border: none;
+      border-bottom: 1px solid rgba(31, 18, 18, 0.2);
+      padding: 0.4rem 0.5rem;
+
+      font-family: inherit;
+      font-size: 0.95rem;
+      font-weight: 350;
+      color: #1f1212;
+      text-align: center;
+      text-transform: lowercase;
+
+      opacity: 0.5;
+      outline: none;
+      transition: opacity 180ms ease-out, border-color 180ms ease-out;
+    }
+
+    .filter::placeholder { color: #1f1212; }
+
+    .filter:hover,
+    .filter:focus {
+      opacity: 1;
+      border-bottom-color: rgba(66, 13, 13, 0.55);
+    }
+
+    /* === Entries === */
+    .entry {
+      border-bottom: 1px solid rgba(31, 18, 18, 0.12);
+    }
+
+    .entry-head {
+      width: 100%;
+      display: flex;
+      align-items: baseline;
+      gap: 0.75rem;
+      padding: 1.4rem 0.25rem;
+    }
+
+    .entry-toggle {
+      flex: 1;
+      min-width: 0;
+      display: flex;
+      align-items: baseline;
+      justify-content: space-between;
+      gap: 1rem;
+
+      background: none;
+      border: none;
+      padding: 0;
+
+      font-family: inherit;
+      text-align: left;
+      text-transform: lowercase;
+      cursor: pointer;
+    }
+
+    .entry-star {
+      flex: none;
+      /* baseline, so the star sits on the question's line rather than below it */
+      align-self: baseline;
+      display: inline-flex;
+      align-items: baseline;
+      gap: 0.25rem;
+
+      background: none;
+      border: none;
+      padding: 0 0.3rem;
+
+      font-family: inherit;
+      font-size: 1rem;
+      font-weight: 400;
+      color: #420d0d;                 /* same as the question text */
+      line-height: 1.4;
+
+      opacity: 0.45;
+      cursor: pointer;
+      transition: opacity 150ms ease-out;
+    }
+
+    .entry-star:hover { opacity: 0.75; }
+    .entry-star.is-on { opacity: 0.9; }
+
+    .entry-star .n { font-size: 0.85rem; }
+    .entry-star .n:empty { display: none; }
+
+    .entry-q {
+      font-size: 1.15rem;
+      font-weight: 500;
+      color: #420d0d;
+      line-height: 1.4;
+      opacity: 0.85;
+      transition: opacity 180ms ease-out;
+    }
+
+    .entry-toggle:hover .entry-q { opacity: 1; }
+
+    .star {
+      color: #420d0d;
+      opacity: 0.65;
+      font-size: 0.9rem;
+      margin-right: 0.4rem;
+    }
+
+    .entry-meta {
+      flex: none;
+      font-size: 0.78rem;
+      font-weight: 350;
+      color: #1f1212;
+      opacity: 0.45;
+      white-space: nowrap;
+    }
+
+    .entry-body {
+      padding: 0 0.25rem 1.4rem;
+    }
+
+    .answer {
+      margin-top: 0.9rem;
+      font-size: 1rem;
+      font-weight: 350;
+      color: #1f1212;
+      opacity: 0.8;
+      line-height: 1.45;
+    }
+
+    .answer:first-child { margin-top: 0; }
+
+    .answer .who {
+      font-size: 0.82rem;
+      opacity: 0.55;
+    }
+
+    .muted {
+      padding: 1rem 0.25rem;
+      font-size: 0.9rem;
+      font-weight: 350;
+      color: #1f1212;
+      opacity: 0.5;
+    }
+
+    @media (max-width: 600px) {
+      body { padding-top: 4rem; }
+      .entry-head { flex-direction: column; gap: 0.35rem; }
+      .entry-q { font-size: 1.05rem; }
+    }
+  </style>
+</head>
+
+<body>
+  <a class="back" href="/">← today</a>
+
+  <main class="wrap">
+    <h1>past questions</h1>
+    <p class="count" id="count"></p>
+
+    <div class="modes">
+      <button type="button" class="mode is-on" id="mode-all">all</button>
+      <span class="mode-sep">·</span>
+      <button type="button" class="mode" id="mode-fav">favorites</button>
+    </div>
+
+    <input class="filter" id="filter" type="search"
+           placeholder="filter questions…" autocomplete="off"
+           aria-label="filter questions" />
+
+    <div id="list">
+      <p class="muted">loading…</p>
+    </div>
+  </main>
+
+  <script>
+    const $ = id => document.getElementById(id);
+    const listEl = $('list');
+
+    let questions = [];
+    let favoritesOnly = false;
+    let threshold = 10;
+    const answerCache = new Map();
+
+    // same per-browser id the main page uses
+    const voterId = (() => {
+      try {
+        let id = localStorage.getItem('qotd-voter');
+        if (!id) {
+          id = crypto.randomUUID().replace(/-/g, '');
+          localStorage.setItem('qotd-voter', id);
+        }
+        return id;
+      } catch {
+        return crypto.randomUUID().replace(/-/g, '');
+      }
+    })();
+
+    async function vote(q, btn) {
+      const next = !q.youStarred;
+      q.youStarred = next;
+      q.stars = Math.max(0, q.stars + (next ? 1 : -1));
+      paintStar(q, btn);
+
+      try {
+        const r = await fetch('/api/star', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ date: q.date, starred: next, voter: voterId }),
+        });
+        const out = await r.json();
+        if (!r.ok) throw new Error(out.error || 'could not save');
+        q.stars = out.stars;
+        q.youStarred = out.youStarred;
+        paintStar(q, btn);
+
+        // crossing the threshold can add it to the favorites list
+        const nowFeatured = q.favorite || q.stars >= threshold;
+        if (nowFeatured !== q.featured) {
+          q.featured = nowFeatured;
+          apply();
+        }
+      } catch {
+        q.youStarred = !next;
+        q.stars = Math.max(0, q.stars + (next ? -1 : 1));
+        paintStar(q, btn);
+      }
+    }
+
+    function paintStar(q, btn) {
+      btn.classList.toggle('is-on', q.youStarred);
+      btn.setAttribute('aria-pressed', String(q.youStarred));
+      btn.title = q.youStarred ? 'you starred this' : 'star this question';
+      btn.querySelector('.ico').textContent = q.youStarred ? '★' : '☆';
+      btn.querySelector('.n').textContent = q.stars || '';
+    }
+
+    const formatDate = iso =>
+      new Date(iso + 'T00:00:00').toLocaleDateString('en-US', {
+        month: 'long', day: 'numeric', year: 'numeric'
+      }).toLowerCase();
+
+    const plural = (n, word) => `${n} ${word}${n === 1 ? '' : 's'}`;
+
+    function renderAnswers(body, responses) {
+      body.textContent = '';
+      if (!responses.length) {
+        const p = document.createElement('p');
+        p.className = 'muted';
+        p.textContent = 'no answers to this one';
+        body.append(p);
+        return;
+      }
+      responses.forEach(r => {
+        const p = document.createElement('p');
+        p.className = 'answer';
+        p.textContent = r.text;
+        if (r.name) {
+          const who = document.createElement('span');
+          who.className = 'who';
+          who.textContent = ` — ${r.name}`;
+          p.append(who);
+        }
+        body.append(p);
+      });
+    }
+
+    async function toggle(entry, q, head) {
+      const body = entry.querySelector('.entry-body');
+
+      if (body) {
+        body.remove();
+        head.setAttribute('aria-expanded', 'false');
+        return;
+      }
+
+      const fresh = document.createElement('div');
+      fresh.className = 'entry-body';
+      fresh.innerHTML = '<p class="muted">loading…</p>';
+      entry.append(fresh);
+      head.setAttribute('aria-expanded', 'true');
+
+      try {
+        if (!answerCache.has(q.date)) {
+          const r = await fetch('/api/day?date=' + encodeURIComponent(q.date), { cache: 'no-store' });
+          if (!r.ok) throw new Error('could not load that day');
+          answerCache.set(q.date, (await r.json()).responses);
+        }
+        renderAnswers(fresh, answerCache.get(q.date));
+      } catch (err) {
+        fresh.innerHTML = '';
+        const p = document.createElement('p');
+        p.className = 'muted';
+        p.textContent = err.message;
+        fresh.append(p);
+      }
+    }
+
+    function render(items) {
+      listEl.textContent = '';
+
+      if (!items.length) {
+        const p = document.createElement('p');
+        p.className = 'muted';
+        if (!questions.length) {
+          p.textContent = 'no questions yet';
+        } else if (favoritesOnly && !questions.some(q => q.featured)) {
+          p.textContent = `nothing here yet — questions arrive by being starred ${threshold} times`;
+        } else {
+          p.textContent = 'no questions match that';
+        }
+        listEl.append(p);
+        return;
+      }
+
+      items.forEach(q => {
+        const entry = document.createElement('article');
+        entry.className = 'entry';
+
+        const head = document.createElement('div');
+        head.className = 'entry-head';
+
+        const toggleBtn = document.createElement('button');
+        toggleBtn.className = 'entry-toggle';
+        toggleBtn.type = 'button';
+        toggleBtn.setAttribute('aria-expanded', 'false');
+
+        const qEl = document.createElement('span');
+        qEl.className = 'entry-q';
+        if (q.featured) {
+          const star = document.createElement('span');
+          star.className = 'star';
+          star.textContent = '★';
+          star.title = q.favorite ? 'a favorite' : `starred by ${q.stars} people`;
+          qEl.append(star);
+        }
+        qEl.append(q.question);
+
+        const meta = document.createElement('span');
+        meta.className = 'entry-meta';
+        meta.textContent = `${formatDate(q.date)} · ${plural(q.answers, 'answer')}`;
+
+        toggleBtn.append(qEl, meta);
+        toggleBtn.addEventListener('click', () => toggle(entry, q, toggleBtn));
+
+        const starBtn = document.createElement('button');
+        starBtn.className = 'entry-star' + (q.youStarred ? ' is-on' : '');
+        starBtn.type = 'button';
+        starBtn.setAttribute('aria-pressed', String(!!q.youStarred));
+        starBtn.title = q.youStarred ? 'you starred this' : 'star this question';
+        starBtn.innerHTML = `<span class="ico">${q.youStarred ? '★' : '☆'}</span>` +
+                            `<span class="n">${q.stars || ''}</span>`;
+        starBtn.addEventListener('click', () => vote(q, starBtn));
+
+        head.append(toggleBtn, starBtn);
+        entry.append(head);
+        listEl.append(entry);
+      });
+    }
+
+    function apply() {
+      const term = $('filter').value.trim().toLowerCase();
+      render(questions.filter(q =>
+        (!favoritesOnly || q.featured) &&
+        (!term || q.question.toLowerCase().includes(term))
+      ));
+    }
+
+    function setMode(onlyFavorites) {
+      favoritesOnly = onlyFavorites;
+      $('mode-all').classList.toggle('is-on', !onlyFavorites);
+      $('mode-fav').classList.toggle('is-on', onlyFavorites);
+      apply();
+    }
+
+    $('mode-all').addEventListener('click', () => setMode(false));
+    $('mode-fav').addEventListener('click', () => setMode(true));
+    $('filter').addEventListener('input', apply);
+
+    (async () => {
+      try {
+        const r = await fetch('/api/archive?voter=' + encodeURIComponent(voterId), { cache: 'no-store' });
+        if (!r.ok) throw new Error('could not load the archive');
+        const payload = await r.json();
+        questions = payload.questions;
+        threshold = payload.threshold ?? threshold;
+
+        const answers = questions.reduce((sum, q) => sum + q.answers, 0);
+        const starred = questions.filter(q => q.featured).length;
+        $('count').textContent = questions.length
+          ? `${plural(questions.length, 'question')} · ${plural(answers, 'answer')}`
+            + (starred ? ` · ${starred} starred` : '')
+          : '';
+
+        // deep link: /archive?favorites
+        if (new URLSearchParams(location.search).has('favorites')) {
+          setMode(true);
+        } else {
+          render(questions);
+        }
+      } catch (err) {
+        listEl.innerHTML = '';
+        const p = document.createElement('p');
+        p.className = 'muted';
+        p.textContent = err.message;
+        listEl.append(p);
+      }
+    })();
+  </script>
+</body>
+</html>

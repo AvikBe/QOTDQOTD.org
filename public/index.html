@@ -1,0 +1,851 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>question of the day</title>
+
+  <!-- Literata -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link
+    href="https://fonts.googleapis.com/css2?family=Literata:opsz,wght@7..72,300..600&display=swap"
+    rel="stylesheet"
+  />
+
+  <style>
+    *, *::before, *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    html, body {
+      height: 100%;
+    }
+
+    body {
+      background: #f4efe6;
+      font-family: 'Literata', Georgia, serif;
+      text-transform: lowercase;
+      overflow: hidden;
+      touch-action: none;
+    }
+
+    main {
+      position: relative;
+      min-height: 100vh;
+    }
+
+    /* === Question === */
+    .question {
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      z-index: 10;
+
+      color: #420d0d;
+      font-weight: 550;
+      font-size: 1.75rem;
+      line-height: 1.45;
+
+      max-width: 32rem;
+      width: 90%;
+      text-align: center;
+    }
+
+    .question.muted {
+      opacity: 0.55;
+      font-weight: 400;
+    }
+
+    .question-text { display: block; }
+
+    /* star sits beside the answer line */
+    .answer-row {
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
+    }
+
+    .answer-row input { flex: 1; min-width: 0; }
+
+    .qstar {
+      flex: none;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.25rem;
+
+      background: none;
+      border: none;
+      padding: 0.35rem 0.25rem;
+
+      font-family: inherit;
+      font-size: 1rem;
+      font-weight: 350;
+      color: #1f1212;                    /* same as the answer line */
+      line-height: 1;
+
+      opacity: 0.4;
+      cursor: pointer;
+      transition: opacity 180ms ease-out;
+    }
+
+    .qstar:hover { opacity: 0.75; }
+    .qstar.is-on { opacity: 0.85; }
+
+    .qstar-count { font-size: 0.85rem; }
+    .qstar-count:empty { display: none; }
+
+    /* === Answers container === */
+    .answers {
+      position: fixed;
+      inset: 0;
+      z-index: 1;
+      pointer-events: none;
+    }
+
+    /* === Individual answers === */
+    .answer {
+      position: absolute;
+      left: 0;
+      top: 0;
+
+      pointer-events: auto;
+      cursor: default;
+      display: inline-block;
+    }
+
+    .answer-inner {
+      display: inline-block;
+      color: #1f1212;
+      opacity: 0.33;
+      font-weight: 350;
+      font-size: 1.35rem;
+      line-height: 1.5;
+
+      white-space: normal;
+      max-width: 32ch;
+
+      will-change: transform;
+
+      transition:
+        opacity 180ms ease-out,
+        font-weight 180ms ease-out,
+        transform 180ms ease-out;
+    }
+
+    .answer:hover .answer-inner {
+      opacity: 0.6;
+      font-weight: 500;
+      transform: scale(1.06);
+    }
+
+    .answer-name {
+      display: block;
+      font-size: 0.85rem;
+      font-weight: 350;
+      line-height: 1.4;
+      opacity: 0;
+      transition: opacity 180ms ease-out;
+    }
+
+    .answer:hover .answer-name {
+      opacity: 0.5;
+    }
+
+    /* === Composer === */
+    .composer {
+      position: fixed;
+      left: 50%;
+      bottom: 2.25rem;
+      transform: translateX(-50%);
+      z-index: 20;
+
+      width: min(30rem, 88vw);
+      text-align: center;
+    }
+
+    .composer input {
+      width: 100%;
+      background: transparent;
+      border: none;
+      border-bottom: 1px solid rgba(31, 18, 18, 0.25);
+      padding: 0.45rem 0.75rem;
+
+      font-family: inherit;
+      font-size: 1.05rem;
+      font-weight: 350;
+      color: #1f1212;
+      text-align: center;
+      text-transform: lowercase;
+
+      opacity: 0.55;
+      outline: none;
+      transition: opacity 180ms ease-out, border-color 180ms ease-out;
+    }
+
+    .composer input::placeholder {
+      color: #1f1212;
+    }
+
+    .composer input:hover,
+    .composer input:focus {
+      opacity: 1;
+      border-bottom-color: rgba(66, 13, 13, 0.55);
+    }
+
+    .composer .name {
+      width: 60%;
+      margin-top: 0.5rem;
+      font-size: 0.85rem;
+      border-bottom-color: rgba(31, 18, 18, 0.15);
+      opacity: 0.4;
+    }
+
+    .composer .hint {
+      margin-top: 0.6rem;
+      font-size: 0.8rem;
+      font-weight: 350;
+      color: #1f1212;
+      opacity: 0;
+      transition: opacity 180ms ease-out;
+    }
+
+    /* the answer input is nested now, so key off the whole composer */
+    .composer:focus-within .hint,
+    .composer.show-hint .hint {
+      opacity: 0.45;
+    }
+
+    /* === Archive link === */
+    .archive-link {
+      position: fixed;
+      top: 1.5rem;
+      left: 1.75rem;
+      z-index: 30;
+
+      font-size: 0.95rem;
+      font-weight: 350;
+      color: #1f1212;
+      text-decoration: none;
+      opacity: 0.45;
+      transition: opacity 180ms ease-out, color 180ms ease-out;
+    }
+
+    .archive-link:hover {
+      opacity: 0.9;
+      color: #420d0d;
+    }
+
+    /* === Search === */
+    .search {
+      position: fixed;
+      top: 1.5rem;
+      right: 1.75rem;
+      z-index: 30;
+      width: min(12rem, 60vw);
+      text-align: right;
+    }
+
+    .search input {
+      width: 100%;
+      background: transparent;
+      border: none;
+      border-bottom: 1px solid rgba(31, 18, 18, 0.2);
+      padding: 0.35rem 0.5rem 0.35rem 1.5rem;
+
+      font-family: inherit;
+      font-size: 0.95rem;
+      font-weight: 350;
+      color: #1f1212;
+      text-align: right;
+      text-transform: lowercase;
+
+      opacity: 0.45;
+      outline: none;
+      transition: opacity 180ms ease-out, border-color 180ms ease-out;
+    }
+
+    .search input::placeholder {
+      color: #1f1212;
+    }
+
+    .search input:hover,
+    .search input:focus {
+      opacity: 1;
+      border-bottom-color: rgba(66, 13, 13, 0.55);
+    }
+
+    /* the browser's own clear button doesn't match the type */
+    .search input::-webkit-search-cancel-button,
+    .search input::-webkit-search-decoration {
+      -webkit-appearance: none;
+      appearance: none;
+    }
+
+    .search .clear {
+      position: absolute;
+      left: 0;
+      top: 0.1rem;
+      z-index: 1;
+      background: none;
+      border: none;
+      padding: 0.25rem 0.35rem;
+
+      font-family: inherit;
+      font-size: 1rem;
+      font-weight: 400;
+      line-height: 1;
+      color: #1f1212;
+
+      opacity: 0.35;
+      cursor: pointer;
+      transition: opacity 180ms ease-out, color 180ms ease-out;
+    }
+
+    .search .clear:hover {
+      opacity: 0.85;
+      color: #420d0d;
+    }
+
+    .search-results {
+      position: absolute;
+      right: 0;
+      top: 100%;
+      width: min(20rem, 85vw);
+      margin-top: 0.75rem;
+      max-height: 60vh;
+      overflow-y: auto;
+      overscroll-behavior: contain;
+      padding: 0.75rem 1rem;
+      background: rgba(244, 239, 230, 0.94);
+      text-align: right;
+
+      scrollbar-width: thin;
+      scrollbar-color: rgba(66, 13, 13, 0.3) transparent;
+    }
+
+    .search-results::-webkit-scrollbar {
+      width: 4px;
+    }
+
+    .search-results::-webkit-scrollbar-thumb {
+      background: rgba(66, 13, 13, 0.3);
+      border-radius: 2px;
+    }
+
+    .search-results::-webkit-scrollbar-track {
+      background: transparent;
+    }
+
+    .search-results .result-q {
+      margin-top: 1.1rem;
+      font-size: 0.8rem;
+      font-weight: 400;
+      color: #420d0d;
+      opacity: 0.75;
+      line-height: 1.4;
+    }
+
+    .search-results .result-q:first-child {
+      margin-top: 0;
+    }
+
+    .search-results .result-a {
+      margin-top: 0.35rem;
+      font-size: 1.05rem;
+      font-weight: 350;
+      color: #1f1212;
+      opacity: 0.8;
+      line-height: 1.4;
+    }
+
+    .search-results .result-empty {
+      font-size: 0.9rem;
+      font-weight: 350;
+      color: #1f1212;
+      opacity: 0.5;
+    }
+
+    @media (max-width: 600px) {
+      .question {
+        font-size: 1.4rem;
+      }
+
+      .answer-inner {
+        font-size: 1.1rem;
+        max-width: 70vw;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <main>
+    <a class="archive-link" href="/archive">past questions</a>
+
+    <div class="search">
+      <button type="button" class="clear" aria-label="clear search" hidden>&times;</button>
+      <input type="search" placeholder="look someone up…"
+             autocomplete="off" aria-label="search answers by name" />
+      <div class="search-results" hidden></div>
+    </div>
+
+    <h1 class="question">
+      <span class="question-text"></span>
+    </h1>
+
+    <section class="answers"></section>
+
+    <form class="composer" hidden>
+      <div class="answer-row">
+        <input type="text" maxlength="140" placeholder="add your answer…"
+               autocomplete="off" enterkeyhint="send" aria-label="your answer" />
+        <button class="qstar" type="button" hidden aria-pressed="false">
+          <span class="qstar-icon">☆</span><span class="qstar-count"></span>
+        </button>
+      </div>
+      <input type="text" class="name" maxlength="60" placeholder="your full name (optional)"
+             autocomplete="name" enterkeyhint="send" aria-label="your full name (optional)" />
+      <p class="hint">press enter to send it into the field</p>
+    </form>
+  </main>
+
+  <script>
+    (() => {
+      const config = {
+        lerp: 0.08,
+        horizontalMargin: 0.04,
+        horizontalJitter: 0.6,
+        verticalSpacing: 140,
+        verticalJitter: 40,
+        keyStep: 90,
+        fadeRange: 120,
+        maxShown: 80,
+        pollInterval: 30000
+      };
+
+      let targetY = 0;
+      let currentY = 0;
+      let loopHeight = 0;
+      let viewportWidth = 0;
+      let viewportHeight = 0;
+      let avoidRects = [];
+
+      let activeDate = null;
+      let knownCount = 0;
+
+      const answerData = [];
+      const container = document.querySelector('.answers');
+      const questionEl = document.querySelector('.question');
+      const questionText = questionEl.querySelector('.question-text');
+      const qstar = document.querySelector('.qstar');
+      const qstarIcon = qstar.querySelector('.qstar-icon');
+      const qstarCount = qstar.querySelector('.qstar-count');
+
+      // a random per-browser id, so one person can't stack stars on a question
+      const voterId = (() => {
+        try {
+          let id = localStorage.getItem('qotd-voter');
+          if (!id) {
+            id = crypto.randomUUID().replace(/-/g, '');
+            localStorage.setItem('qotd-voter', id);
+          }
+          return id;
+        } catch {
+          // private mode etc — stars still work, they just aren't remembered
+          return crypto.randomUUID().replace(/-/g, '');
+        }
+      })();
+      const composer = document.querySelector('.composer');
+      const input = composer.querySelector('input:not(.name)');
+      const nameInput = composer.querySelector('input.name');
+      const search = document.querySelector('.search');
+      const searchInput = search.querySelector('input');
+      const searchResults = search.querySelector('.search-results');
+      const searchClear = search.querySelector('.clear');
+      const hint = composer.querySelector('.hint');
+      const defaultHint = hint.textContent;
+      let hintTimer = null;
+
+      const mod = (n, m) => ((n % m) + m) % m;
+      const lerp = (a, b, t) => a + (b - a) * t;
+      const clamp = (n, min, max) => Math.min(Math.max(n, min), max);
+
+      /* === Floating field === */
+
+      // 1 far from the question/composer, 0 overlapping one of them
+      function fadeNearUI(d, y) {
+        let fade = 1;
+        avoidRects.forEach(rect => {
+          const dx = Math.max(rect.left - (d.fixedX + d.width), d.fixedX - rect.right, 0);
+          const dy = Math.max(rect.top - (y + d.height), y - rect.bottom, 0);
+          fade = Math.min(fade, clamp(Math.max(dx, dy) / config.fadeRange, 0, 1));
+        });
+        return fade;
+      }
+
+      function updatePositions() {
+        answerData.forEach(d => {
+          let y = d.baseY - currentY * d.depth;
+          y = mod(y + loopHeight / 2, loopHeight) - loopHeight / 2 + viewportHeight / 2;
+          d.element.style.transform =
+            `translate3d(${d.fixedX.toFixed(1)}px, ${y.toFixed(1)}px, 0)`;
+
+          const fade = fadeNearUI(d, y);
+          d.element.style.opacity = fade.toFixed(3);
+          d.element.style.pointerEvents = fade < 0.05 ? 'none' : 'auto';
+        });
+      }
+
+      function animate() {
+        currentY = lerp(currentY, targetY, config.lerp);
+        updatePositions();
+        requestAnimationFrame(animate);
+      }
+
+      function layout() {
+        viewportWidth = window.innerWidth;
+        viewportHeight = window.innerHeight;
+        avoidRects = [
+          questionEl.getBoundingClientRect(),
+          searchInput.getBoundingClientRect(),
+          document.querySelector('.archive-link').getBoundingClientRect(),
+        ];
+        if (!composer.hidden) avoidRects.push(composer.getBoundingClientRect());
+
+        const count = answerData.length;
+        if (!count) return;
+
+        // keep the loop taller than the screen so answers never wrap in view
+        loopHeight = Math.max(count * config.verticalSpacing, viewportHeight * 1.5);
+        const spacing = loopHeight / count;
+
+        const marginX = viewportWidth * config.horizontalMargin;
+        const bandWidth = (viewportWidth - marginX * 2) / count;
+
+        answerData.forEach(d => {
+          d.width = d.element.offsetWidth;
+          d.height = d.element.offsetHeight;
+          d.baseY = d.index * spacing + d.yJitter;
+
+          const x = marginX + (d.band + 0.5) * bandWidth
+            + d.jitter * bandWidth * config.horizontalJitter;
+          d.fixedX = clamp(x, marginX, Math.max(marginX, viewportWidth - marginX - d.width));
+
+          d.element.querySelector('.answer-inner').style.transformOrigin =
+            d.fixedX + d.width / 2 < viewportWidth / 2 ? 'left center' : 'right center';
+        });
+
+        updatePositions();
+      }
+
+      function makeAnswer(response, index, band) {
+        const outer = document.createElement('span');
+        outer.className = 'answer';
+        const inner = document.createElement('span');
+        inner.className = 'answer-inner';
+        inner.textContent = response.text;
+        if (response.name) {
+          const name = document.createElement('span');
+          name.className = 'answer-name';
+          name.textContent = `— ${response.name}`;
+          inner.append(name);
+        }
+        outer.append(inner);
+        container.append(outer);
+
+        answerData.push({
+          element: outer,
+          index,
+          band,
+          jitter: Math.random() - 0.5,
+          yJitter: (Math.random() - 0.5) * 2 * config.verticalJitter,
+          depth: 0.5 + Math.random() * 0.5,
+          fixedX: 0, baseY: 0, width: 0, height: 0
+        });
+      }
+
+      function buildField(responses) {
+        container.textContent = '';
+        answerData.length = 0;
+        const shown = responses.slice(-config.maxShown);
+        const bands = [...shown.keys()].sort(() => Math.random() - 0.5);
+        shown.forEach((response, i) => makeAnswer(response, i, bands[i]));
+        layout();
+      }
+
+      function appendAnswers(responses) {
+        responses.forEach(response => {
+          const i = answerData.length;
+          makeAnswer(response, i, Math.floor(Math.random() * (i + 1)));
+        });
+        layout();
+      }
+
+      /* === Data === */
+
+      async function fetchToday() {
+        const r = await fetch('/api/today?voter=' + encodeURIComponent(voterId), { cache: 'no-store' });
+        if (!r.ok) throw new Error('failed to load');
+        return r.json();
+      }
+
+      function renderStar(data) {
+        qstar.hidden = !data.question;
+        qstar.classList.toggle('is-on', !!data.youStarred);
+        qstar.setAttribute('aria-pressed', String(!!data.youStarred));
+        qstarIcon.textContent = data.youStarred ? '★' : '☆';
+        qstarCount.textContent = data.stars ? String(data.stars) : '';
+        qstar.title = data.youStarred ? 'you starred this' : 'star this question';
+      }
+
+      function applyToday(data) {
+        activeDate = data.date;
+        knownCount = data.responses.length;
+
+        if (!data.question) {
+          questionText.textContent = 'no question yet today';
+          questionEl.classList.add('muted');
+          composer.hidden = true;
+          renderStar(data);
+          buildField([]);
+          return;
+        }
+
+        questionText.textContent = data.question;
+        questionEl.classList.remove('muted');
+        document.title = data.question;
+        composer.hidden = false;
+        renderStar(data);
+        buildField(data.responses);
+      }
+
+      qstar.addEventListener('click', async () => {
+        if (!activeDate) return;
+        const next = !qstar.classList.contains('is-on');
+        renderStar({
+          question: true,
+          youStarred: next,
+          stars: Math.max(0, (parseInt(qstarCount.textContent, 10) || 0) + (next ? 1 : -1)),
+        });
+        try {
+          const r = await fetch('/api/star', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ date: activeDate, starred: next, voter: voterId }),
+          });
+          const out = await r.json();
+          if (!r.ok) throw new Error(out.error || 'could not save');
+          renderStar({ question: true, ...out });
+        } catch {
+          // put it back the way it was
+          applyToday(await fetchToday());
+        }
+        layout();
+      });
+
+      async function poll() {
+        try {
+          const data = await fetchToday();
+          if (data.date !== activeDate || data.question !== questionText.textContent) {
+            applyToday(data);
+          } else {
+            renderStar(data);
+            if (data.responses.length > knownCount) {
+              appendAnswers(data.responses.slice(knownCount));
+              knownCount = data.responses.length;
+            }
+          }
+        } catch { /* transient — try again next poll */ }
+      }
+
+      /* === Composer === */
+
+      function setHint(text) {
+        hint.textContent = text;
+        composer.classList.add('show-hint');
+        clearTimeout(hintTimer);
+        hintTimer = setTimeout(() => {
+          composer.classList.remove('show-hint');
+          hint.textContent = defaultHint;
+        }, 3000);
+      }
+
+      // with two fields and no submit button, the browser no longer
+      // submits on enter by itself
+      composer.addEventListener('keydown', e => {
+        if (e.key === 'Enter') {
+          e.preventDefault();
+          composer.requestSubmit();
+        }
+      });
+
+      composer.addEventListener('submit', async e => {
+        e.preventDefault();
+        const text = input.value.trim();
+        if (!text || !activeDate) return;
+
+        input.disabled = true;
+        try {
+          const r = await fetch('/api/respond', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ date: activeDate, text, name: nameInput.value.trim() })
+          });
+          const out = await r.json();
+          if (!r.ok) throw new Error(out.error || 'something went wrong');
+
+          input.value = '';
+          appendAnswers(out.responses.slice(knownCount));
+          knownCount = out.responses.length;
+          setHint('added — it’s floating out there now');
+        } catch (err) {
+          setHint(err.message);
+        } finally {
+          input.disabled = false;
+          input.focus();
+        }
+      });
+
+      /* === Search === */
+
+      const formatDate = iso =>
+        new Date(iso + 'T00:00:00').toLocaleDateString('en-US', {
+          month: 'long', day: 'numeric', year: 'numeric'
+        }).toLowerCase();
+
+      function renderResults(query, results) {
+        searchResults.textContent = '';
+        if (!results.length) {
+          const p = document.createElement('p');
+          p.className = 'result-empty';
+          p.textContent = `no signed answers from “${query}”`;
+          searchResults.append(p);
+        }
+        let lastDay = null;
+        results.forEach(res => {
+          if (res.date !== lastDay) {
+            const h = document.createElement('p');
+            h.className = 'result-q';
+            h.textContent = `${res.question} — ${formatDate(res.date)}`;
+            searchResults.append(h);
+            lastDay = res.date;
+          }
+          const a = document.createElement('p');
+          a.className = 'result-a';
+          a.textContent = `${res.text} — ${res.name}`;
+          searchResults.append(a);
+        });
+        searchResults.hidden = false;
+      }
+
+      async function runSearch() {
+        const query = searchInput.value.trim();
+        if (!query) {
+          searchResults.hidden = true;
+          searchResults.textContent = '';
+          return;
+        }
+        try {
+          const r = await fetch('/api/search?name=' + encodeURIComponent(query), { cache: 'no-store' });
+          if (!r.ok) return;
+          const out = await r.json();
+          if (searchInput.value.trim() === query) renderResults(query, out.results);
+        } catch { /* transient */ }
+      }
+
+      let searchTimer = null;
+      searchInput.addEventListener('input', () => {
+        searchClear.hidden = !searchInput.value;
+        clearTimeout(searchTimer);
+        searchTimer = setTimeout(runSearch, 250);
+      });
+
+      searchClear.addEventListener('click', () => {
+        searchInput.value = '';
+        searchClear.hidden = true;
+        searchResults.hidden = true;
+        searchResults.textContent = '';
+        searchInput.focus();
+      });
+
+      searchInput.addEventListener('focus', () => {
+        if (searchInput.value.trim() && searchResults.textContent) searchResults.hidden = false;
+      });
+
+      searchInput.addEventListener('keydown', e => {
+        if (e.key === 'Escape') {
+          searchInput.value = '';
+          searchClear.hidden = true;
+          searchResults.hidden = true;
+          searchInput.blur();
+        }
+      });
+
+      document.addEventListener('click', e => {
+        if (!e.target.closest('.search')) searchResults.hidden = true;
+      });
+
+      /* === Input === */
+
+      window.addEventListener('wheel', e => {
+        if (e.target.closest('.search')) return;
+        e.preventDefault();
+        targetY += e.deltaY;
+      }, { passive: false });
+
+      let lastTouchY = null;
+
+      window.addEventListener('touchstart', e => {
+        lastTouchY = e.touches[0].clientY;
+      }, { passive: true });
+
+      window.addEventListener('touchmove', e => {
+        if (e.target.closest('.composer, .search')) return;
+        e.preventDefault();
+        if (lastTouchY === null) {
+          lastTouchY = e.touches[0].clientY;
+          return;
+        }
+        targetY += lastTouchY - e.touches[0].clientY;
+        lastTouchY = e.touches[0].clientY;
+      }, { passive: false });
+
+      window.addEventListener('touchend', () => lastTouchY = null);
+
+      window.addEventListener('keydown', e => {
+        if (e.target.closest('input, textarea, button')) return;
+        const steps = {
+          ArrowDown: config.keyStep,
+          ArrowUp: -config.keyStep,
+          PageDown: viewportHeight * 0.8,
+          PageUp: -viewportHeight * 0.8,
+          ' ': (e.shiftKey ? -1 : 1) * viewportHeight * 0.8
+        };
+        if (e.key in steps) {
+          e.preventDefault();
+          targetY += steps[e.key];
+        }
+      });
+
+      window.addEventListener('resize', layout);
+
+      document.addEventListener('DOMContentLoaded', async () => {
+        try {
+          applyToday(await fetchToday());
+        } catch {
+          questionText.textContent = 'couldn’t load today’s question';
+          questionEl.classList.add('muted');
+        }
+        // re-measure once the webfont swaps in and text widths change
+        document.fonts.ready.then(layout);
+        requestAnimationFrame(animate);
+        setInterval(poll, config.pollInterval);
+      });
+    })();
+  </script>
+</body>
+</html>

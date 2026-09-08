@@ -1,0 +1,7 @@
+.DS_Store
+data.json
+admin_password.txt
+.dev.vars
+node_modules/
+.wrangler/
+migration.sql

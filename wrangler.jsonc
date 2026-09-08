@@ -1,0 +1,30 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "qotdqotd",
+  "main": "src/worker.js",
+  "compatibility_date": "2026-07-01",
+  "assets": {
+    "directory": "./public",
+    "binding": "ASSETS",
+    "html_handling": "auto-trailing-slash"
+  },
+  // keep the workers.dev address alive alongside the custom domain
+  "workers_dev": true,
+  "routes": [
+    { "pattern": "qotdqotd.org", "custom_domain": true },
+    { "pattern": "www.qotdqotd.org", "custom_domain": true }
+  ],
+  "vars": {
+    // "today" for the site is computed in this timezone
+    "TIMEZONE": "America/Los_Angeles",
+    // visitor stars needed for a question to reach the favorites list on its own
+    "STAR_THRESHOLD": "10"
+  },
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "qotd",
+      "database_id": "c19151be-7052-4ad8-8454-2cd04238c145"
+    }
+  ]
+}

@@ -1,0 +1,442 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="robots" content="noindex" />
+  <title>set today's question</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link
+    href="https://fonts.googleapis.com/css2?family=Literata:opsz,wght@7..72,300..600&display=swap"
+    rel="stylesheet"
+  />
+
+  <style>
+    *, *::before, *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    html, body {
+      height: 100%;
+    }
+
+    body {
+      background: #f4efe6;
+      font-family: 'Literata', Georgia, serif;
+      text-transform: lowercase;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .admin {
+      width: min(34rem, 90vw);
+      text-align: center;
+    }
+
+    .date {
+      font-size: 0.95rem;
+      font-weight: 350;
+      color: #1f1212;
+      opacity: 0.5;
+      margin-bottom: 2.5rem;
+    }
+
+    .q {
+      width: 100%;
+      background: transparent;
+      border: none;
+      border-bottom: 1px solid rgba(66, 13, 13, 0.35);
+      color: #420d0d;
+      font-family: inherit;
+      font-size: 1.6rem;
+      font-weight: 550;
+      line-height: 1.4;
+      text-align: center;
+      text-transform: lowercase;
+      padding: 0.5rem 0.25rem;
+      outline: none;
+    }
+
+    .q:focus {
+      border-bottom-color: rgba(66, 13, 13, 0.7);
+    }
+
+    .q::placeholder {
+      color: #420d0d;
+      opacity: 0.35;
+      font-weight: 400;
+    }
+
+    .row {
+      margin-top: 2rem;
+      display: flex;
+      gap: 0.75rem;
+      justify-content: center;
+      align-items: center;
+    }
+
+    .pw {
+      background: transparent;
+      border: none;
+      border-bottom: 1px solid rgba(31, 18, 18, 0.3);
+      color: #1f1212;
+      font-family: inherit;
+      font-size: 0.95rem;
+      text-align: center;
+      padding: 0.35rem 0.5rem;
+      width: 12rem;
+      outline: none;
+    }
+
+    button {
+      background: transparent;
+      border: 1px solid rgba(66, 13, 13, 0.5);
+      border-radius: 999px;
+      color: #420d0d;
+      font-family: inherit;
+      font-size: 0.95rem;
+      text-transform: lowercase;
+      padding: 0.4rem 1.1rem;
+      cursor: pointer;
+      transition: background 150ms ease-out, color 150ms ease-out;
+    }
+
+    button:hover {
+      background: #420d0d;
+      color: #f4efe6;
+    }
+
+    .status {
+      margin-top: 2rem;
+      font-size: 0.9rem;
+      font-weight: 350;
+      color: #1f1212;
+      opacity: 0.6;
+      min-height: 1.3em;
+    }
+
+    .status a {
+      color: #420d0d;
+    }
+
+    /* === Favorites === */
+    .favorites {
+      margin-top: 4.5rem;
+      text-align: left;
+      border-top: 1px solid rgba(31, 18, 18, 0.15);
+      padding-top: 1.75rem;
+    }
+
+    .favorites h2 {
+      font-size: 0.9rem;
+      font-weight: 400;
+      color: #1f1212;
+      opacity: 0.5;
+      text-align: center;
+      margin-bottom: 0.4rem;
+    }
+
+    .fav-hint {
+      font-size: 0.78rem;
+      font-weight: 350;
+      color: #1f1212;
+      opacity: 0.4;
+      text-align: center;
+      margin-bottom: 1.5rem;
+    }
+
+    .fav-filter {
+      display: block;
+      width: 100%;
+      background: transparent;
+      border: none;
+      border-bottom: 1px solid rgba(31, 18, 18, 0.15);
+      padding: 0.35rem 0.5rem;
+      margin-bottom: 0.5rem;
+
+      font-family: inherit;
+      font-size: 0.9rem;
+      font-weight: 350;
+      color: #1f1212;
+      text-align: center;
+      text-transform: lowercase;
+
+      opacity: 0.45;
+      outline: none;
+      transition: opacity 180ms ease-out;
+    }
+
+    .fav-filter::placeholder { color: #1f1212; }
+    .fav-filter:hover, .fav-filter:focus { opacity: 1; }
+
+    .fav-list {
+      max-height: 22rem;
+      overflow-y: auto;
+      overscroll-behavior: contain;
+      scrollbar-width: thin;
+      scrollbar-color: rgba(66, 13, 13, 0.3) transparent;
+    }
+
+    .fav-list::-webkit-scrollbar { width: 4px; }
+    .fav-list::-webkit-scrollbar-thumb {
+      background: rgba(66, 13, 13, 0.3);
+      border-radius: 2px;
+    }
+
+    .fav-row {
+      display: flex;
+      align-items: baseline;
+      gap: 0.65rem;
+      width: 100%;
+
+      background: none;
+      border: none;
+      border-bottom: 1px solid rgba(31, 18, 18, 0.08);
+      padding: 0.7rem 0.25rem;
+
+      font-family: inherit;
+      text-align: left;
+      text-transform: lowercase;
+      cursor: pointer;
+    }
+
+    .fav-row:hover { background: rgba(66, 13, 13, 0.04); }
+
+    .fav-star {
+      flex: none;
+      font-size: 1rem;
+      line-height: 1;
+      color: #420d0d;
+      opacity: 0.25;
+      transition: opacity 150ms ease-out;
+    }
+
+    .fav-row.is-fav .fav-star { opacity: 0.9; }
+    .fav-row:hover .fav-star { opacity: 0.6; }
+    .fav-row.is-fav:hover .fav-star { opacity: 1; }
+
+    .fav-q {
+      flex: 1;
+      font-size: 0.95rem;
+      font-weight: 350;
+      color: #1f1212;
+      opacity: 0.75;
+      line-height: 1.35;
+    }
+
+    .fav-row.is-fav .fav-q {
+      color: #420d0d;
+      opacity: 0.9;
+      font-weight: 400;
+    }
+
+    .fav-date {
+      flex: none;
+      font-size: 0.72rem;
+      font-weight: 350;
+      color: #1f1212;
+      opacity: 0.4;
+      white-space: nowrap;
+    }
+
+    .fav-muted {
+      font-size: 0.85rem;
+      font-weight: 350;
+      color: #1f1212;
+      opacity: 0.45;
+      text-align: center;
+      padding: 1rem 0;
+    }
+
+    @media (max-width: 600px) {
+      .q { font-size: 1.25rem; }
+      .row { flex-direction: column; }
+    }
+  </style>
+</head>
+
+<body>
+  <main class="admin">
+    <p class="date" id="date"></p>
+    <form id="form">
+      <input class="q" id="question" maxlength="200"
+             placeholder="what is today's question?"
+             autocomplete="off" autofocus />
+      <div class="row">
+        <input class="pw" id="password" type="password"
+               placeholder="admin password" autocomplete="current-password" />
+        <button type="submit">post it</button>
+      </div>
+    </form>
+    <p class="status" id="status"></p>
+
+    <section class="favorites">
+      <h2>past questions</h2>
+      <p class="fav-hint" id="fav-hint">click a question to star it — your password above is used to save</p>
+
+      <input class="fav-filter" id="fav-filter" type="search"
+             placeholder="filter…" autocomplete="off" aria-label="filter questions" />
+
+      <div class="fav-list" id="fav-list">
+        <p class="fav-muted">loading…</p>
+      </div>
+    </section>
+  </main>
+
+  <script>
+    const $ = id => document.getElementById(id);
+
+    $('date').textContent = new Date().toLocaleDateString('en-US', {
+      weekday: 'long', month: 'long', day: 'numeric', year: 'numeric'
+    }).toLowerCase();
+
+    fetch('/api/today', { cache: 'no-store' })
+      .then(r => r.json())
+      .then(d => {
+        if (d.question && d.date === d.today) {
+          $('status').textContent =
+            `today's question is “${d.question}” — posting will replace it`;
+        }
+      })
+      .catch(() => {});
+
+    /* === Favorites === */
+    let archive = [];
+    const listEl = $('fav-list');
+
+    const formatDate = iso =>
+      new Date(iso + 'T00:00:00').toLocaleDateString('en-US', {
+        month: 'short', day: 'numeric', year: 'numeric'
+      }).toLowerCase();
+
+    function note(msg) {
+      $('status').textContent = msg;
+    }
+
+    async function toggleFavorite(q, row) {
+      const password = $('password').value;
+      if (!password) {
+        note('enter your admin password first, then click again');
+        $('password').focus();
+        return;
+      }
+
+      const next = !q.favorite;
+      // optimistic — reverted below if the server says no
+      q.favorite = next;
+      row.classList.toggle('is-fav', next);
+      row.querySelector('.fav-star').textContent = next ? '★' : '☆';
+
+      try {
+        const r = await fetch('/api/favorite', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ password, date: q.date, favorite: next }),
+        });
+        const out = await r.json();
+        if (!r.ok) throw new Error(out.error || 'could not save');
+        note(next ? `starred “${q.question}”` : `unstarred “${q.question}”`);
+      } catch (err) {
+        q.favorite = !next;
+        row.classList.toggle('is-fav', !next);
+        row.querySelector('.fav-star').textContent = !next ? '★' : '☆';
+        note(err.message);
+      }
+    }
+
+    function renderFavorites(items) {
+      listEl.textContent = '';
+
+      if (!items.length) {
+        const p = document.createElement('p');
+        p.className = 'fav-muted';
+        p.textContent = archive.length ? 'nothing matches that' : 'no questions yet';
+        listEl.append(p);
+        return;
+      }
+
+      items.forEach(q => {
+        const row = document.createElement('button');
+        row.type = 'button';
+        row.className = 'fav-row' + (q.favorite ? ' is-fav' : '');
+
+        const star = document.createElement('span');
+        star.className = 'fav-star';
+        star.textContent = q.favorite ? '★' : '☆';
+
+        const text = document.createElement('span');
+        text.className = 'fav-q';
+        text.textContent = q.question;
+
+        const date = document.createElement('span');
+        date.className = 'fav-date';
+        // a question can also reach the list on visitor stars alone
+        const votes = q.stars ? `${q.stars}★` : '';
+        const auto = !q.favorite && q.featured ? ' · in by votes' : '';
+        date.textContent = [formatDate(q.date), votes].filter(Boolean).join(' · ') + auto;
+
+        row.append(star, text, date);
+        row.addEventListener('click', () => toggleFavorite(q, row));
+        listEl.append(row);
+      });
+    }
+
+    $('fav-filter').addEventListener('input', e => {
+      const term = e.target.value.trim().toLowerCase();
+      renderFavorites(term
+        ? archive.filter(q => q.question.toLowerCase().includes(term))
+        : archive);
+    });
+
+    async function loadArchive() {
+      try {
+        const r = await fetch('/api/archive', { cache: 'no-store' });
+        if (!r.ok) throw new Error('could not load past questions');
+        const payload = await r.json();
+        archive = payload.questions;
+        $('fav-hint').textContent =
+          `click a question to star it — visitors' stars also add one at ${payload.threshold ?? 10}`;
+        $('fav-filter').value = '';
+        renderFavorites(archive);
+      } catch (err) {
+        listEl.innerHTML = '';
+        const p = document.createElement('p');
+        p.className = 'fav-muted';
+        p.textContent = err.message;
+        listEl.append(p);
+      }
+    }
+
+    loadArchive();
+
+    $('form').addEventListener('submit', async e => {
+      e.preventDefault();
+      const question = $('question').value.trim();
+      if (!question) {
+        $('status').textContent = 'the question is empty';
+        return;
+      }
+      $('status').textContent = 'posting…';
+      try {
+        const r = await fetch('/api/question', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ question, password: $('password').value })
+        });
+        const out = await r.json();
+        if (!r.ok) throw new Error(out.error || 'something went wrong');
+        $('status').innerHTML = 'posted — it’s live. <a href="/">see it</a>';
+        $('question').value = '';
+        loadArchive();
+      } catch (err) {
+        $('status').textContent = err.message;
+      }
+    });
+  </script>
+</body>
+</html>
