@@ -622,6 +622,10 @@
         verticalJitter: 40,
         keyStep: 90,
         fadeRange: 120,
+        // how close two answers get before the back one starts dimming,
+        // and how hard it dims once they touch
+        overlapPadding: 10,
+        overlapFalloff: 3,
         maxShown: 80,
         pollInterval: 30000
       };
@@ -675,25 +679,75 @@
 
       /* === Floating field === */
 
+      // ease the edges of a fade so it doesn't switch on linearly
+      const smooth = t => t * t * (3 - 2 * t);
+
       // 1 far from the question/composer, 0 overlapping one of them
       function fadeNearUI(d, y) {
         let fade = 1;
         avoidRects.forEach(rect => {
           const dx = Math.max(rect.left - (d.fixedX + d.width), d.fixedX - rect.right, 0);
           const dy = Math.max(rect.top - (y + d.height), y - rect.bottom, 0);
-          fade = Math.min(fade, clamp(Math.max(dx, dy) / config.fadeRange, 0, 1));
+          fade = Math.min(fade, smooth(clamp(Math.max(dx, dy) / config.fadeRange, 0, 1)));
         });
         return fade;
+      }
+
+      // answers drift at different speeds, so they cross each other. when two
+      // collide the one further back fades, leaving the front one readable
+      // instead of two lines of text mashed together.
+      function applyOverlapFade() {
+        const n = answerData.length;
+        const pad = config.overlapPadding;
+
+        for (let i = 0; i < n; i++) answerData[i].overlapFade = 1;
+
+        for (let i = 0; i < n; i++) {
+          const a = answerData[i];
+          if (a.uiFade <= 0.02) continue;
+
+          for (let j = i + 1; j < n; j++) {
+            const b = answerData[j];
+            if (b.uiFade <= 0.02) continue;
+
+            const ix = Math.min(a.fixedX + a.width, b.fixedX + b.width)
+                     - Math.max(a.fixedX, b.fixedX) + pad;
+            if (ix <= 0) continue;
+            const iy = Math.min(a.y + a.height, b.y + b.height)
+                     - Math.max(a.y, b.y) + pad;
+            if (iy <= 0) continue;
+
+            const area = Math.min(a.width * a.height, b.width * b.height) || 1;
+            const ratio = (Math.min(ix, a.width, b.width) * Math.min(iy, a.height, b.height)) / area;
+
+            // whoever is "in front" stays put; hovering pulls one forward
+            const aFront = a.hovered !== b.hovered
+              ? a.hovered
+              : (a.depth === b.depth ? i < j : a.depth > b.depth);
+            const back = aFront ? b : a;
+
+            back.overlapFade = Math.min(
+              back.overlapFade,
+              1 - smooth(clamp(ratio * config.overlapFalloff, 0, 1))
+            );
+          }
+        }
       }
 
       function updatePositions() {
         answerData.forEach(d => {
           let y = d.baseY - currentY * d.depth;
-          y = mod(y + loopHeight / 2, loopHeight) - loopHeight / 2 + viewportHeight / 2;
-          d.element.style.transform =
-            `translate3d(${d.fixedX.toFixed(1)}px, ${y.toFixed(1)}px, 0)`;
+          d.y = mod(y + loopHeight / 2, loopHeight) - loopHeight / 2 + viewportHeight / 2;
+          d.uiFade = fadeNearUI(d, d.y);
+        });
 
-          const fade = fadeNearUI(d, y);
+        applyOverlapFade();
+
+        answerData.forEach(d => {
+          d.element.style.transform =
+            `translate3d(${d.fixedX.toFixed(1)}px, ${d.y.toFixed(1)}px, 0)`;
+
+          const fade = d.uiFade * d.overlapFade;
           d.element.style.opacity = fade.toFixed(3);
           d.element.style.pointerEvents = fade < 0.05 ? 'none' : 'auto';
         });
@@ -756,15 +810,23 @@
         outer.append(inner);
         container.append(outer);
 
-        answerData.push({
+        const data = {
           element: outer,
           index,
           band,
           jitter: Math.random() - 0.5,
           yJitter: (Math.random() - 0.5) * 2 * config.verticalJitter,
           depth: 0.5 + Math.random() * 0.5,
-          fixedX: 0, baseY: 0, width: 0, height: 0
-        });
+          hovered: false,
+          fixedX: 0, baseY: 0, y: 0, width: 0, height: 0,
+          uiFade: 1, overlapFade: 1
+        };
+
+        // hovering pulls an answer in front of whatever it is crossing
+        outer.addEventListener('mouseenter', () => data.hovered = true);
+        outer.addEventListener('mouseleave', () => data.hovered = false);
+
+        answerData.push(data);
       }
 
       function buildField(responses) {
