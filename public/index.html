@@ -204,6 +204,18 @@
       opacity: 0.4;
     }
 
+    /* present so implicit submission works, but never shown */
+    .composer .send {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      padding: 0;
+      border: 0;
+      overflow: hidden;
+      clip: rect(0 0 0 0);
+      opacity: 0;
+    }
+
     .composer .hint {
       margin-top: 0.6rem;
       font-size: 0.8rem;
@@ -608,6 +620,8 @@
       </div>
       <input type="text" class="name" maxlength="60" placeholder="your full name (optional)"
              autocomplete="name" enterkeyhint="send" aria-label="your full name (optional)" />
+      <!-- lets the keyboard's enter/send key submit natively on mobile -->
+      <button type="submit" class="send" tabindex="-1" aria-hidden="true">send</button>
       <p class="hint">press enter to send it into the field</p>
     </form>
   </main>
@@ -935,21 +949,21 @@
         }, 3000);
       }
 
-      // with two fields and no submit button, the browser no longer
-      // submits on enter by itself
-      composer.addEventListener('keydown', e => {
-        if (e.key === 'Enter') {
-          e.preventDefault();
-          composer.requestSubmit();
-        }
-      });
+      // enter is handled by the browser's own implicit submission (via the
+      // hidden submit button), which mobile keyboards trigger reliably —
+      // a keydown listener misses enter while an IME is composing
+      let sending = false;
 
       composer.addEventListener('submit', async e => {
         e.preventDefault();
+        if (sending) return;
         const text = input.value.trim();
         if (!text || !activeDate) return;
 
-        input.disabled = true;
+        // readOnly rather than disabled: disabling blurs the field and
+        // drops the mobile keyboard, which won't come back on refocus
+        sending = true;
+        input.readOnly = true;
         try {
           const r = await fetch('/api/respond', {
             method: 'POST',
@@ -966,7 +980,8 @@
         } catch (err) {
           setHint(err.message);
         } finally {
-          input.disabled = false;
+          sending = false;
+          input.readOnly = false;
           input.focus();
         }
       });
