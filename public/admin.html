@@ -20,21 +20,23 @@
       padding: 0;
     }
 
-    html, body {
-      height: 100%;
-    }
-
+    /* min-height rather than height, and auto margins rather than
+       align-items: center — when the page is taller than the screen
+       (phones), centering pushed the top of it out of reach */
     body {
+      min-height: 100vh;
+      min-height: 100dvh;
       background: #f1e9da;
       font-family: 'Literata', Georgia, serif;
       text-transform: lowercase;
       display: flex;
-      align-items: center;
       justify-content: center;
+      padding: 2rem 0;
     }
 
     .admin {
       width: min(34rem, 90vw);
+      margin: auto 0;
       text-align: center;
     }
 
@@ -312,6 +314,8 @@
 
     @media (max-width: 600px) {
       .q { font-size: 1.25rem; }
+      /* under 16px, ios zooms in on focus and leaves the page zoomed */
+      .pw, .fav-filter { font-size: 1rem; }
       .row { flex-direction: column; }
       .sugg-row { flex-direction: column; gap: 0.35rem; }
     }
